@@ -33,16 +33,14 @@ app.post('/users', (request, response) => {
     return response.status(400).json({ error: 'Username already exists' });
   }
 
-  const user = { 
+  users.push({ 
     id: uuidv4(),
     name, 
     username,
-    todos: []
-  };
+    todos: [],
+  });
   
-  users.push(user);
-
-  return response.status(201).json(users);
+  return response.status(201).send();
 });
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
@@ -65,13 +63,13 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 
   user.todos.push(newTodos);
   
-  return response.status(201).json(newTodos);
+  return response.status(201).send();
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { user } = request;  
   const { title, deadLine } = request.body;
-  const { id } = request.params;
+  const { id } = request.query;
 
   const todosExist = user.todos.find((todo) => todo.id === id);
 
@@ -82,12 +80,14 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   todosExist.title = title;
   todosExist.deadLine = new Date(deadLine);
   
-  return response.status(201).json(todosExist);
+  return response.status(201).send();
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
+  // Complete aqui
   const { user } = request;
-  const { id } = request.params;
+  const { done } = request.body;
+  const { id } = request.query;
 
   const todosExist = user.todos.find((todo) => todo.id === id);
 
@@ -95,25 +95,25 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
     return response.status(400).json({ error: 'todos does not exist'});
   }
 
-  todosExist.done = true;
+  todosExist.done = done;
 
-  return response.json(todosExist);
+  return response.status(201).send();
 
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { user } = request;
-  const { id } = request.params;
+  const { id } = request.query;
 
   const todosExist = user.todos.find((todo) => todo.id === id);
 
-  if( todosExist === -1 ) {
+  if(!todosExist) {
     return response.status(400).json({ error: 'todos does not exist'});
   }
 
-  user.todos.splice(todosExist, 1)
+  user.todos.splice(user, 1)
 
-  return response.status(204).send();
+  return response.status(200).json(users);
 
 });
 
